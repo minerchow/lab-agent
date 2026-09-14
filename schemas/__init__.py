@@ -6,6 +6,7 @@ from .article import (
     ArticleResponse,
     ArticleListResponse,
 )
+from .upload import UploadResponse
 
 __all__ = [
     "UserBase",
@@ -16,4 +17,5 @@ __all__ = [
     "ArticleUpdate",
     "ArticleResponse",
     "ArticleListResponse",
+    "UploadResponse",
 ]

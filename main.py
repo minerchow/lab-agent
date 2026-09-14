@@ -2,8 +2,10 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
-from routers import user_router, health_router, article_router, role_router
+from routers import user_router, health_router, article_router, role_router, upload_router
+from config.upload_config import UPLOAD_DIR
 from utils.exception_handlers import register_exception_handlers
 
 
@@ -37,6 +39,10 @@ app.include_router(health_router)
 app.include_router(user_router)
 app.include_router(article_router)
 app.include_router(role_router)
+app.include_router(upload_router)
+
+# 挂载上传文件静态目录，前端可通过 /uploads/xxx 访问
+app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
 
 @app.get("/")
