@@ -5,8 +5,8 @@ from fastapi import HTTPException
 from models.article import Article
 from models.user import User
 from models.role import Role
-from schemas.user import UserCreate
-from utils.security import get_hash_password
+from schemas.user import PasswordUpdateRequest, UserCreate, UserUpdateRequest
+from utils.security import get_hash_password, verify_password
 
 
 async def get_user_by_username(db: AsyncSession, username: str) -> User | None:
@@ -15,6 +15,14 @@ async def get_user_by_username(db: AsyncSession, username: str) -> User | None:
     )
     result = await db.execute(query)
     return result.scalars().unique().one_or_none()
+
+async def update_user_info(db: AsyncSession, user: User, user_data: UserUpdateRequest):
+    update_data = user_data.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(user, field, value)
+    await db.flush()
+    await db.refresh(user)
+    return user
 
 
 async def get_user_by_id(db: AsyncSession, user_id: int) -> User | None:
@@ -61,6 +69,22 @@ async def soft_delete_user(db: AsyncSession, user: User) -> User:
         .where(Article.user_id == user.id, Article.is_deleted == False)
         .values(is_deleted=True)
     )
+    await db.flush()
+    await db.refresh(user)
+    return user
+
+async def update_password(db: AsyncSession, user: User, data: PasswordUpdateRequest):
+    if not verify_password(data.old_password, user.password):
+        raise HTTPException(
+            status_code=400,
+            detail="原密码错误"
+        )
+    if data.old_password == data.new_password:
+        raise HTTPException(
+            status_code=400,
+            detail="新密码不能与原密码相同"
+        )
+    user.password = get_hash_password(data.new_password)
     await db.flush()
     await db.refresh(user)
     return user

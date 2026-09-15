@@ -31,6 +31,11 @@ class UserResponse(UserBase):
 
     model_config = ConfigDict(from_attributes=True)
 
+class UserUpdateRequest(BaseModel):
+    username: Optional[str] = Field(None, min_length=1, max_length=50, description="用户名")
+    nickname: Optional[str] = Field(None, max_length=50, description="昵称")
+    avatar: Optional[str] = Field(None, description="头像URL")
+
 
 class UserLogin(BaseModel):
     username: str = Field(..., max_length=50, description="用户名")
@@ -55,3 +60,7 @@ class LoginResponse(BaseModel):
 
 class UserRoleUpdate(BaseModel):
     role_ids: List[int] = Field(..., description="角色ID列表")
+
+class PasswordUpdateRequest(BaseModel):
+    old_password: str
+    new_password: str

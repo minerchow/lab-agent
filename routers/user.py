@@ -3,10 +3,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.db_conf import get_db
 from models.user import User
-from schemas.user import UserCreate, UserResponse, UserLogin, LoginResponse, TokenData, RefreshTokenRequest, UserRoleUpdate
-from crud.user import get_user_by_username, create_user, get_user_by_id, update_user_roles, soft_delete_user
+from schemas.user import PasswordUpdateRequest, UserCreate, UserResponse, UserLogin, LoginResponse, TokenData, RefreshTokenRequest, UserRoleUpdate, UserUpdateRequest
+from crud.user import get_user_by_username, create_user, get_user_by_id, update_user_roles, soft_delete_user, update_user_info, update_password as update_user_password
 from utils.response import success_response
-from utils.auth import get_current_user, create_tokens, verify_refresh_token
+from utils.auth import get_current_user, create_login_tokens, verify_refresh_token, revoke_user_tokens, rotate_tokens
 from utils.security import verify_password
 from utils.permissions import require_role
 
@@ -49,7 +49,7 @@ async def login(login_data: UserLogin, db: AsyncSession = Depends(get_db)):
             detail="用户名或密码错误"
         )
 
-    tokens = create_tokens(user.id)
+    tokens = await create_login_tokens(user.id)
 
     return success_response(
         message="登录成功",
@@ -66,7 +66,7 @@ async def refresh_token(
     db: AsyncSession = Depends(get_db)
 ):
     user = await verify_refresh_token(request.refresh_token, db)
-    tokens = create_tokens(user.id)
+    tokens = await rotate_tokens(user.id, request.refresh_token)
 
     return success_response(
         message="Token刷新成功",
@@ -79,6 +79,34 @@ async def get_user_info(user: User = Depends(get_current_user)):
     return success_response(
         message="获取用户信息成功",
         data=UserResponse.model_validate(user)
+    )
+
+
+@router.post("/updateinfo")
+async def update_user_info_endpoint(
+    user_data: UserUpdateRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    user = await get_user_by_id(db, current_user.id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="用户不存在"
+        )
+
+    if user_data.username and user_data.username != user.username:
+        existing = await get_user_by_username(db, user_data.username)
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="用户名已存在"
+            )
+
+    updated_user = await update_user_info(db, user, user_data)
+    return success_response(
+        message="更新用户信息成功",
+        data=UserResponse.model_validate(updated_user)
     )
 
 
@@ -132,4 +160,16 @@ async def delete_user(
         )
 
     await soft_delete_user(db, user)
+    await revoke_user_tokens(user.id)
     return success_response(message="删除用户成功")
+
+@router.post("/resetpassword")
+async def update_password(
+    data: PasswordUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """修改当前用户密码"""
+    await update_user_password(db, current_user, data)
+    await revoke_user_tokens(current_user.id)
+    return success_response(message="密码修改成功")
