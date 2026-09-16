@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import select, update, func
 from sqlalchemy.orm import joinedload
 from fastapi import HTTPException
 from models.article import Article
@@ -31,6 +31,24 @@ async def get_user_by_id(db: AsyncSession, user_id: int) -> User | None:
     )
     result = await db.execute(query)
     return result.scalars().unique().one_or_none()
+
+
+async def get_users(db: AsyncSession, page: int = 1, page_size: int = 10) -> tuple[list[User], int]:
+    offset = (page - 1) * page_size
+    count_query = select(func.count(User.id)).where(User.is_deleted == False)
+    total_result = await db.execute(count_query)
+    total = total_result.scalar()
+
+    query = (
+        select(User)
+        .where(User.is_deleted == False)
+        .order_by(User.created_at.desc())
+        .offset(offset)
+        .limit(page_size)
+    )
+    result = await db.execute(query)
+    users = list(result.scalars().unique().all())
+    return users, total
 
 
 async def create_user(db: AsyncSession, user_data: UserCreate) -> User:
