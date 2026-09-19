@@ -11,6 +11,7 @@ from crud.equipment import get_equipment_page_list, create_equipment, update_equ
 from crud.lab import get_lab_by_id
 from utils.response import success_response
 from utils.permissions import require_role
+from utils.auth import get_current_user
 
 router = APIRouter(prefix="/api/equipments", tags=["equipments"])
 
@@ -22,6 +23,7 @@ async def list_equipments(
     keywords: Optional[str] = Query(None, description="搜索关键词"),
     lab_id: Optional[int] = Query(None, description="按实验室筛选"),
     db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
 ):
     equipments, total = await get_equipment_page_list(db, page, page_size, keywords, lab_id)
     total_pages = math.ceil(total / page_size) if total else 0

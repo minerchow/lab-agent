@@ -21,7 +21,7 @@ async def get_lab_by_name(db: AsyncSession, name: str) -> Lab | None:
 
 
 async def get_lab_page_list(
-    db: AsyncSession, page: int, page_size: int, keywords: str | None = None
+    db: AsyncSession, page: int, page_size: int, keywords: str | None = None, status: int | None = None
 ) -> tuple[list[Lab], int]:
     offset = (page - 1) * page_size
 
@@ -34,6 +34,8 @@ async def get_lab_page_list(
                 Lab.description.like(f"%{keywords}%"),
             )
         )
+    if status is not None:
+        conditions.append(Lab.status == status)
 
     count_query = select(func.count(Lab.id)).where(*conditions)
     total_result = await db.execute(count_query)
