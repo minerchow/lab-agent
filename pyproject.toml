@@ -8,6 +8,7 @@ dependencies = [
     "aiomysql>=0.3.2",
     "alembic>=1.18.5",
     "bcrypt<4.1.0",
+    "cryptography>=50.0.1",
     "fastapi[standard]>=0.129.2",
     "passlib[bcrypt]>=1.7.4",
     "pyjwt>=2.12.1",
@@ -17,5 +18,5 @@ dependencies = [
 ]
 
 [[tool.uv.index]]
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+url = "https://mirrors.aliyun.com/pypi/simple/"
 default = true
