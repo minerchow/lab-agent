@@ -5,5 +5,6 @@ from .role import Role, role_permission, user_role
 from .permission import Permission
 from .lab import Lab
 from .equipment import Equipment
+from .reservation import Reservation
 
-__all__ = ["Base", "User", "Article", "Role", "Permission", "role_permission", "user_role", "Lab", "Equipment"]
+__all__ = ["Base", "User", "Article", "Role", "Permission", "role_permission", "user_role", "Lab", "Equipment", "Reservation"]

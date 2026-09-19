@@ -13,6 +13,8 @@ class LabResponse(BaseModel):
     description: Optional[str] = None
     img: Optional[str] = None
     status: int
+    user_id: Optional[int] = None
+    user_name: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

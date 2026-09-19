@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from models.lab import Lab
 from schemas.lab import LabCreateRequest, LabUpdateRequest
@@ -8,9 +9,11 @@ from schemas.lab import LabCreateRequest, LabUpdateRequest
 
 async def get_lab_by_id(db: AsyncSession, lab_id: int) -> Lab | None:
     result = await db.execute(
-        select(Lab).where(Lab.id == lab_id, Lab.is_deleted == False)
+        select(Lab)
+        .options(joinedload(Lab.user))
+        .where(Lab.id == lab_id, Lab.is_deleted == False)
     )
-    return result.scalars().one_or_none()
+    return result.scalars().unique().one_or_none()
 
 
 async def get_lab_by_name(db: AsyncSession, name: str) -> Lab | None:
@@ -43,23 +46,24 @@ async def get_lab_page_list(
 
     query = (
         select(Lab)
+        .options(joinedload(Lab.user))
         .where(*conditions)
         .order_by(Lab.created_at.desc())
         .offset(offset)
         .limit(page_size)
     )
     result = await db.execute(query)
-    labs = list(result.scalars().all())
+    labs = list(result.scalars().unique().all())
 
     return labs, total
 
 
-async def create_lab(db: AsyncSession, data: LabCreateRequest) -> Lab:
+async def create_lab(db: AsyncSession, data: LabCreateRequest, user_id: int) -> Lab:
     exists = await get_lab_by_name(db, data.name)
     if exists:
         raise HTTPException(status_code=400, detail="实验室名称已存在")
 
-    lab = Lab(**data.model_dump())
+    lab = Lab(**data.model_dump(), user_id=user_id)
     db.add(lab)
     await db.flush()
     await db.refresh(lab)
