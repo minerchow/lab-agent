@@ -56,6 +56,27 @@ async def list_reservations(
     )
 
 
+@router.get("/my")
+async def list_my_reservations(
+    page: int = Query(1, ge=1, description="页码"),
+    page_size: int = Query(10, ge=1, le=100, description="每页数量"),
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    reservations, total = await get_reservations(db, page, page_size, user.id)
+    total_pages = math.ceil(total / page_size) if total else 0
+    return success_response(
+        message="获取我的预约列表成功",
+        data=ReservationListResponse(
+            items=[ReservationDetailResponse.model_validate(r) for r in reservations],
+            total=total,
+            page=page,
+            page_size=page_size,
+            total_pages=total_pages,
+        ).model_dump(),
+    )
+
+
 @router.get("/detail/{reservation_id}")
 async def get_reservation_detail(
     reservation_id: int,

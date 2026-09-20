@@ -43,13 +43,15 @@ class ReservationResponse(BaseModel):
     end_time: str
     remark: Optional[str]
     status: int
+    type: str | None = None
     created_at: datetime
     updated_at: datetime
     
     class Config:
         from_attributes = True
 
-
+class AuditReservationRequest(BaseModel):
+    status: int  #  1 | 2
 class ReservationDetailResponse(ReservationResponse):
     """预约详情响应（包含关联信息）"""
     user_name: Optional[str] = None
