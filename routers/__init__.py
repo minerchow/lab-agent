@@ -6,5 +6,6 @@ from .upload import router as upload_router
 from .lab import router as lab_router
 from .equipment import router as equipment_router
 from .reservation import router as reservation_router
+from .ai import router as ai_router
 
-__all__ = ["user_router", "health_router", "article_router", "role_router", "upload_router", "lab_router", "equipment_router", "reservation_router"]
+__all__ = ["user_router", "health_router", "article_router", "role_router", "upload_router", "lab_router", "equipment_router", "reservation_router", "ai_router"]

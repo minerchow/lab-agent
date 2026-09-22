@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from routers import user_router, health_router, article_router, role_router, upload_router, lab_router, equipment_router, reservation_router
+from routers import user_router, health_router, article_router, role_router, upload_router, lab_router, equipment_router, reservation_router, ai_router
 from config.upload_config import UPLOAD_DIR
 from utils.exception_handlers import register_exception_handlers
 
@@ -43,6 +43,7 @@ app.include_router(upload_router)
 app.include_router(lab_router)
 app.include_router(equipment_router)
 app.include_router(reservation_router)
+app.include_router(ai_router)
 
 # 挂载上传文件静态目录，前端可通过 /uploads/xxx 访问
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
