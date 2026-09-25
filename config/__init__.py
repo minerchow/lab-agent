@@ -2,6 +2,18 @@ from .db_conf import get_db, async_engine, AsyncSessionLocal
 from .cache_config import redis_client, get_cache, get_json_cache, set_cache, delete_cache
 from .upload_config import get_upload_path, get_upload_url, get_upload_file_path, get_upload_file_url
 from .llm_config import LLM_API_KEY, LLM_BASE_URL, LLM_MODEL, LLM_TEMPERATURE, LLM_MAX_TOKENS, LLM_TIMEOUT
+from .chroma_config import (
+    get_embedding_function,
+    EMBEDDING_API_KEY,
+    EMBEDDING_BASE_URL,
+    EMBEDDING_MODEL,
+    KB_CHUNK_SIZE,
+    KB_CHUNK_OVERLAP,
+    KB_SYNC_INTERVAL,
+    KB_SEARCH_TOP_K,
+    KB_FINAL_TOP_K,
+    KB_SCORE_THRESHOLD,
+)
 __all__ = [
     "get_db",
     "async_engine",
@@ -21,4 +33,14 @@ __all__ = [
     "LLM_TEMPERATURE",
     "LLM_MAX_TOKENS",
     "LLM_TIMEOUT",
+    "get_embedding_function",
+    "EMBEDDING_API_KEY",
+    "EMBEDDING_BASE_URL",
+    "EMBEDDING_MODEL",
+    "KB_CHUNK_SIZE",
+    "KB_CHUNK_OVERLAP",
+    "KB_SYNC_INTERVAL",
+    "KB_SEARCH_TOP_K",
+    "KB_FINAL_TOP_K",
+    "KB_SCORE_THRESHOLD",
 ]
